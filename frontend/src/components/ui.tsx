@@ -18,10 +18,15 @@ export function PageIntro({
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Card({
+  children,
+  className = "",
+  ...props
+}: React.HTMLAttributes<HTMLElement> & { children: ReactNode }) {
   return (
     <section
       className={`rounded-2xl border border-fuchsia-200/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-fuchsia-900/50 dark:bg-fuchsia-950/30 ${className}`}
+      {...props}
     >
       {children}
     </section>

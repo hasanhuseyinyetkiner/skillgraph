@@ -4,8 +4,39 @@ import { api } from "../api";
 import { Card, ErrorState, LoadingState, PageIntro } from "../components/ui";
 import type { Meta } from "../types";
 
+type EvaluationReport = {
+  profile_count: number;
+  candidate_policy: string;
+  label_policy: string;
+  overlap: Record<string, number>;
+  graph: Record<string, number>;
+  method_version?: string;
+  weights_version?: string;
+  graph_version?: number;
+};
+
+function MetricTable({ title, values }: { title: string; values: Record<string, number> }) {
+  return (
+    <Card>
+      <h2 className="text-sm font-semibold">{title}</h2>
+      <ul className="mt-3 space-y-1 text-sm">
+        {Object.entries(values).map(([key, value]) => (
+          <li key={key} className="flex justify-between gap-3">
+            <span>{key}</span>
+            <span className="tabular font-medium">{value.toFixed(4)}</span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 export function MethodologyPage() {
   const meta = useQuery({ queryKey: ["meta"], queryFn: () => api<Meta>("/api/meta") });
+  const evaluation = useQuery({
+    queryKey: ["evaluation"],
+    queryFn: () => api<EvaluationReport>("/api/evaluation"),
+  });
 
   if (meta.isLoading) return <LoadingState label="Loading methodology…" />;
   if (meta.isError) return <ErrorState error={meta.error} />;
@@ -15,7 +46,7 @@ export function MethodologyPage() {
     <div>
       <PageIntro
         title="Methodology"
-        description="Scoring components, level scale, and disclaimers served by GET /api/meta."
+        description="Scoring components, level scale, and measured ranking metrics from GET /api/evaluation."
       />
       <Card className="mb-4">
         <p className="text-sm font-semibold">{data.fit_index_label}</p>
@@ -40,7 +71,7 @@ export function MethodologyPage() {
         </dl>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="mb-4 grid gap-4 lg:grid-cols-2">
         <Card>
           <h2 className="text-sm font-semibold">Named components</h2>
           <ul className="mt-3 space-y-3">
@@ -79,6 +110,30 @@ export function MethodologyPage() {
           </ul>
         </Card>
       </div>
+
+      <div className="mb-2">
+        <h2 className="text-lg font-semibold">Ranking evaluation</h2>
+        <p className="mt-1 text-sm text-fuchsia-900/60 dark:text-fuchsia-200/60">
+          Measured on hand-labeled synthetic fixtures only. Macro averages across profiles.
+        </p>
+      </div>
+      {evaluation.isLoading ? <LoadingState label="Running evaluation…" /> : null}
+      {evaluation.isError ? <ErrorState error={evaluation.error} /> : null}
+      {evaluation.data ? (
+        <div className="grid gap-4 lg:grid-cols-2" data-testid="evaluation-metrics">
+          <MetricTable title="Overlap baseline" values={evaluation.data.overlap} />
+          <MetricTable title="Graph-augmented" values={evaluation.data.graph} />
+          <Card className="lg:col-span-2 text-xs text-fuchsia-900/60 dark:text-fuchsia-200/60">
+            <p>{evaluation.data.candidate_policy}</p>
+            <p className="mt-1">{evaluation.data.label_policy}</p>
+            <p className="mt-1">
+              Profiles: {evaluation.data.profile_count}
+              {evaluation.data.graph_version != null ? ` · graph v${evaluation.data.graph_version}` : ""}
+              {evaluation.data.method_version ? ` · ${evaluation.data.method_version}` : ""}
+            </p>
+          </Card>
+        </div>
+      ) : null}
     </div>
   );
 }

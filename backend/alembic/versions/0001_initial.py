@@ -6,7 +6,7 @@ Create Date: 2026-10-20
 
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 import sqlalchemy as sa
 from alembic import op
@@ -130,7 +130,7 @@ def upgrade() -> None:
     )
     op.bulk_insert(
         graph_meta,
-        [{"id": 1, "graph_version": 0, "updated_at": datetime.now(timezone.utc)}],
+        [{"id": 1, "graph_version": 0, "updated_at": datetime.now(UTC)}],
     )
 
 

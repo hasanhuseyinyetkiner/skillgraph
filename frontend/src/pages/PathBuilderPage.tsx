@@ -43,6 +43,7 @@ export function PathBuilderPage() {
         <label className="block text-sm">
           <span className="text-fuchsia-900/50 dark:text-fuchsia-200/50">Target role</span>
           <select
+            data-testid="path-role-select"
             className="mt-1 w-full rounded-xl border border-fuchsia-200 bg-transparent px-3 py-2 dark:border-fuchsia-800"
             value={selected?.id ?? ""}
             onChange={(e) => {
@@ -59,6 +60,7 @@ export function PathBuilderPage() {
         </label>
         <Button
           className="mt-4"
+          data-testid="build-path"
           disabled={!selected || path.isPending}
           onClick={() => selected && path.mutate(selected.id)}
         >
@@ -92,7 +94,7 @@ export function PathBuilderPage() {
             <p className="mt-2 text-xs text-fuchsia-900/50 dark:text-fuchsia-200/50">{path.data.duration_note}</p>
           </Card>
 
-          <Card>
+          <Card data-testid="path-steps">
             <h2 className="text-sm font-semibold">Ordered steps</h2>
             {path.data.ordered_steps.length === 0 ? (
               <p className="mt-3 text-sm text-fuchsia-900/50">No gap steps returned for this role.</p>

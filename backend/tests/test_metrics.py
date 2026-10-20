@@ -1,6 +1,6 @@
 import math
 
-from app.domain.metrics import dcg, ndcg_at_k, precision_at_k
+from app.domain.metrics import dcg, ndcg_at_k, precision_at_k, recall_at_k
 from app.domain.scoring import overlap_baseline_score, score_profile_against_role
 from app.domain.types import ProfileSkillState, Requirement, SkillRecord
 
@@ -13,6 +13,8 @@ def test_ndcg_known_values() -> None:
     # Ideal ranking of [0, 0, 3] is [3, 0, 0], so nDCG is 0.5.
     assert ndcg_at_k([0, 0, 3], 3) == (3 / math.log2(4)) / dcg([3, 0, 0])
     assert precision_at_k([3, 0, 0], 3) == 1 / 3
+    assert recall_at_k([3, 0, 2, 0], 2) == 0.5
+    assert recall_at_k([0, 0, 0], 2) == 1
     assert ndcg_at_k([0, 0, 0], 3) == 1
 
 

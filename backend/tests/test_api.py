@@ -189,7 +189,16 @@ def test_evaluation_reports_measured_metrics(client: TestClient) -> None:
     report = client.get("/api/evaluation").json()
     print("EVAL_METRICS " + json.dumps({"overlap": report["overlap"], "graph": report["graph"]}))
     assert report["profile_count"] == 5
+    expected_keys = {
+        "precision_at_3",
+        "precision_at_5",
+        "recall_at_3",
+        "recall_at_5",
+        "ndcg_at_3",
+        "ndcg_at_5",
+    }
     for method in ("overlap", "graph"):
+        assert set(report[method]) == expected_keys
         for key, value in report[method].items():
             assert 0 <= value <= 1, key
     synonym = next(item for item in report["per_profile"] if item["profile"] == "synonym_specialist")

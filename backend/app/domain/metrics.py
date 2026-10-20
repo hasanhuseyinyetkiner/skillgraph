@@ -31,10 +31,31 @@ def precision_at_k(ranked_relevances: list[float], k: int) -> float:
     return sum(1 for relevance in window if relevance > 0) / len(window)
 
 
+def recall_at_k(ranked_relevances: list[float], k: int, *, relevant_threshold: float = 0.0) -> float:
+    """Fraction of relevant candidates recovered in the top-k window."""
+
+    if k <= 0:
+        raise ValueError("k must be positive")
+    total_relevant = sum(1 for relevance in ranked_relevances if relevance > relevant_threshold)
+    if total_relevant == 0:
+        return 1.0
+    recovered = sum(1 for relevance in ranked_relevances[:k] if relevance > relevant_threshold)
+    return recovered / total_relevant
+
+
 def _macro(values: list[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
+
+
+def _empty_metric_bucket(k_values: tuple[int, ...]) -> dict[str, list[float]]:
+    bucket: dict[str, list[float]] = {}
+    for k in k_values:
+        bucket[f"precision_at_{k}"] = []
+        bucket[f"recall_at_{k}"] = []
+        bucket[f"ndcg_at_{k}"] = []
+    return bucket
 
 
 def evaluate_rankers(
@@ -55,10 +76,8 @@ def evaluate_rankers(
 
     per_profile: list[dict[str, object]] = []
     buckets: dict[str, dict[str, list[float]]] = {
-        "overlap": {f"precision_at_{k}": [] for k in k_values}
-        | {f"ndcg_at_{k}": [] for k in k_values},
-        "graph": {f"precision_at_{k}": [] for k in k_values}
-        | {f"ndcg_at_{k}": [] for k in k_values},
+        "overlap": _empty_metric_bucket(k_values),
+        "graph": _empty_metric_bucket(k_values),
     }
 
     for profile in profiles:
@@ -105,6 +124,7 @@ def evaluate_rankers(
         for method, rels in (("graph", graph_rels), ("overlap", overlap_rels)):
             for k in k_values:
                 buckets[method][f"precision_at_{k}"].append(precision_at_k(rels, k))
+                buckets[method][f"recall_at_{k}"].append(recall_at_k(rels, k))
                 buckets[method][f"ndcg_at_{k}"].append(ndcg_at_k(rels, k))
         per_profile.append({"profile": profile["id"], "roles": ranking_rows})
 
@@ -116,6 +136,7 @@ def evaluate_rankers(
         "profile_count": len(profiles),
         "candidate_policy": "hand-labeled candidate set per profile; unlabeled roles are excluded",
         "label_policy": "grades are hand-assigned from the fixture rules, not copied from the scorer",
+        "relevance_threshold": "grade > 0 counts as relevant for Precision@K and Recall@K",
         "overlap": summarize("overlap"),
         "graph": summarize("graph"),
         "per_profile": per_profile,
