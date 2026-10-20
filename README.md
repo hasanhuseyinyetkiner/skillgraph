@@ -1,23 +1,30 @@
-# SkillGraph
+<a id="readme-top"></a>
 
-Map what you know. Discover where your skills can take you.
+<div align="center">
 
-Explainable skill graph, role fit breakdown, and cycle-safe learning paths on a synthetic ontology (≥80 skills, ≥20 roles). Embeddings optional.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <img alt="SkillGraph — map what you know, discover where skills can take you" src="docs/assets/banner-light.svg" width="100%">
+</picture>
 
-## Verified local run (Windows)
+**Explainable skill graphs and career paths.** Browse a seeded ontology, inspect role fit with named score components, and build cycle-safe learning paths — embeddings optional.
+
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Limitations](#security-privacy-and-limitations)
+
+</div>
+
+## Quick start
 
 ```powershell
-# Terminal 1 — API (127.0.0.1:8105)
+# Backend (API http://127.0.0.1:8105)
 cd backend
 uv sync
 uv run python -m app
 
-# Terminal 2 — Web (127.0.0.1:5105)
+# Frontend (http://127.0.0.1:5105) — new terminal
 cd frontend
 pnpm install
-pnpm build
-pnpm preview
-# or: pnpm dev  (needs free RAM; preview is lighter)
+pnpm dev
 ```
 
 | Service | URL |
@@ -25,13 +32,32 @@ pnpm preview
 | Web | http://127.0.0.1:5105 |
 | API docs | http://127.0.0.1:8105/docs |
 
-Ontology seeds on startup (`graph_version` starts at 1).
+Seed loads ≥80 skills, ≥20 roles and learning resources. Open Graph Explorer → pick a target role → Path Builder.
 
-```powershell
-cd backend
-uv run pytest -q
+## How it works
+
+```mermaid
+flowchart LR
+  PG[(Skills / roles / edges)] --> NX[NetworkX cache]
+  NX --> R[Deterministic recommender]
+  R --> P[Cycle-safe learning path]
+  NX --> UI[Cytoscape graph UI]
 ```
 
-## Status
+`graph_version` increments with ontology edits so workers stay consistent.
 
-Backend + frontend MVP runnable. License pending owner decision.
+## Testing
+
+```powershell
+cd backend; uv run pytest -q
+cd frontend; pnpm build
+```
+
+## Security, privacy and limitations
+
+> [!IMPORTANT]
+> Synthetic profiles. Recommendations are exploratory — never a probability of getting a job. No automated promotion or rejection.
+
+License: pending owner decision.
+
+<p align="right"><a href="#readme-top">↑ back to top</a></p>

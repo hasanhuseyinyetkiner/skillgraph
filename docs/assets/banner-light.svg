@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="SkillGraph: Map what you know. Discover where your skills can take you.">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F6F8FA"/></linearGradient>
+<radialGradient id="glow" cx="0.8" cy="0.4" r="0.6"><stop offset="0" stop-color="#C026D3" stop-opacity="0.12"/><stop offset="1" stop-color="#C026D3" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#E2E8F0" stroke-width="1" opacity="0.6"/></pattern>
+</defs>
+<rect width="1280" height="360" rx="24" fill="url(#bg)"/>
+<rect width="1280" height="360" rx="24" fill="url(#grid)" opacity="0.5"/>
+<rect width="1280" height="360" rx="24" fill="url(#glow)"/>
+<rect x="0.75" y="0.75" width="1278.5" height="358.5" rx="23.5" fill="none" stroke="#E2E8F0" stroke-width="1.5"/>
+<rect x="80" y="62" width="44" height="6" rx="3" fill="#C026D3"/>
+<text x="80" y="128" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="60" font-weight="800" letter-spacing="-1.5" fill="#0F172A">SkillGraph</text>
+<text x="80" y="186" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="28" fill="#475569">Map what you know.</text><text x="80" y="222" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="28" fill="#475569">Discover where your skills can take you.</text>
+<rect x="80" y="268" width="172" height="36" rx="18" fill="#C026D3" fill-opacity="0.12" stroke="#C026D3" stroke-opacity="0.45"/><text x="166.0" y="292" text-anchor="middle" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="600" fill="#C026D3">Knowledge graph</text><rect x="264" y="268" width="192" height="36" rx="18" fill="#C026D3" fill-opacity="0.12" stroke="#C026D3" stroke-opacity="0.45"/><text x="360.0" y="292" text-anchor="middle" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="600" fill="#C026D3">Explainable paths</text><rect x="468" y="268" width="142" height="36" rx="18" fill="#C026D3" fill-opacity="0.12" stroke="#C026D3" stroke-opacity="0.45"/><text x="539.0" y="292" text-anchor="middle" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="600" fill="#C026D3">Gap analysis</text>
+<line x1="900" y1="180" x2="980" y2="90" stroke="#C026D3" stroke-opacity="1" stroke-width="4"/>
+<line x1="900" y1="180" x2="990" y2="260" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="980" y1="90" x2="1070" y2="170" stroke="#C026D3" stroke-opacity="1" stroke-width="4"/>
+<line x1="990" y1="260" x2="1070" y2="170" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="1070" y1="170" x2="1150" y2="80" stroke="#C026D3" stroke-opacity="1" stroke-width="4"/>
+<line x1="1070" y1="170" x2="1160" y2="270" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="1150" y1="80" x2="1210" y2="175" stroke="#C026D3" stroke-opacity="1" stroke-width="4"/>
+<line x1="1160" y1="270" x2="1210" y2="175" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="990" y1="260" x2="1060" y2="300" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="980" y1="90" x2="1080" y2="60" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="1080" y1="60" x2="1150" y2="80" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<line x1="1060" y1="300" x2="1160" y2="270" stroke="#475569" stroke-opacity="0.35" stroke-width="2"/>
+<circle cx="900" cy="180" r="18" fill="#C026D3" stroke="#C026D3" stroke-width="2.5"/>
+<circle cx="980" cy="90" r="18" fill="#C026D3" stroke="#C026D3" stroke-width="2.5"/>
+<circle cx="990" cy="260" r="12" fill="#FFFFFF" stroke="#475569" stroke-width="2.5"/>
+<circle cx="1070" cy="170" r="18" fill="#C026D3" stroke="#C026D3" stroke-width="2.5"/>
+<circle cx="1150" cy="80" r="18" fill="#C026D3" stroke="#C026D3" stroke-width="2.5"/>
+<circle cx="1160" cy="270" r="12" fill="#FFFFFF" stroke="#475569" stroke-width="2.5"/>
+<circle cx="1210" cy="175" r="18" fill="#C026D3" stroke="#C026D3" stroke-width="2.5"/>
+<circle cx="1060" cy="300" r="12" fill="#FFFFFF" stroke="#475569" stroke-width="2.5"/>
+<circle cx="1080" cy="60" r="12" fill="#FFFFFF" stroke="#475569" stroke-width="2.5"/>
+<circle cx="1210" cy="175" r="28" fill="none" stroke="#F0ABFC" stroke-width="3"/>
+</svg>
