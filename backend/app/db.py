@@ -25,7 +25,9 @@ def make_engine(database_url: str) -> Engine:
     ensure_sqlite_parent(database_url)
     kwargs: dict[str, object] = {"pool_pre_ping": True}
     if database_url.startswith("sqlite"):
-        kwargs["connect_args"] = {"check_same_thread": False}
+        # timeout (seconds) fails locked opens instead of hanging forever when
+        # a second local process competes for the same SQLite file.
+        kwargs["connect_args"] = {"check_same_thread": False, "timeout": 5.0}
         kwargs["poolclass"] = NullPool
     engine = create_engine(database_url, **kwargs)
     if database_url.startswith("sqlite"):
@@ -35,6 +37,7 @@ def make_engine(database_url: str) -> Engine:
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA busy_timeout=5000")
             cursor.close()
 
     return engine

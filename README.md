@@ -37,7 +37,7 @@ Embeddings (`sentence-transformers`) are an optional extra and are **off** by de
 
 ## Quick start
 
-Native path (verified on Windows 11 with `uv` + `pnpm`). Docker Compose is for CI smoke only until the `compose-smoke` job is green on GitHub Actions.
+Native path (verified on Windows 11 with `uv` + `pnpm`). Docker Compose is also exercised by the green `compose-smoke` CI job. Prefer one local API process against the default SQLite file — a second start will fail after a short lock timeout instead of hanging.
 
 ```powershell
 # Backend — http://127.0.0.1:8105
@@ -112,11 +112,11 @@ pnpm exec playwright install chromium   # once
 pnpm e2e
 ```
 
-Latest local verification (2026-10-20): backend **32 passed, 1 skipped** (postgres marker); frontend Vitest **1 passed**; `pnpm build` OK. Playwright covers demo → graph → role fit → path.
+Latest local verification (2026-10-20, anti-slop re-audit): backend **32 passed, 1 skipped** (postgres marker); frontend Vitest **1 passed**; `pnpm build` OK. Live API on `:8105`: demo profile, named score components (`exact_match` / `validated_synonym` / `related_skill` / …), learning path cycle reporting on Legacy Integration Engineer, `graph_version` increments on ontology edits. Playwright covers demo → graph → role fit → path.
 
 ## Compose / CI
 
-`compose.yaml` binds API `127.0.0.1:8105`, web `127.0.0.1:5105`, Postgres host `5405`. GitHub Actions runs Ruff + pytest (Postgres service), frontend lint/tsc/vitest/build, and `compose-smoke`. Local Docker is not required for development.
+`compose.yaml` binds API `127.0.0.1:8105`, web `127.0.0.1:5105`, Postgres host `5405`. GitHub Actions runs Ruff + pytest (Postgres service), frontend lint/tsc/vitest/build, and `compose-smoke` (verified green on `main`). Local Docker is not required for development.
 
 ## Security, privacy and limitations
 

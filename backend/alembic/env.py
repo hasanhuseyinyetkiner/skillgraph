@@ -34,8 +34,20 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     section = config.get_section(config.config_ini_section) or {}
-    section["sqlalchemy.url"] = get_url()
-    connectable = engine_from_config(section, prefix="sqlalchemy.", poolclass=pool.NullPool)
+    url = get_url()
+    section["sqlalchemy.url"] = url
+    connect_args: dict[str, object] = {}
+    if url.startswith("sqlite"):
+        # Match app.db: fail fast on lock instead of blocking startup forever.
+        # Do not run PRAGMA on this connection before Alembic configures it —
+        # that can leave a half-applied upgrade without a version stamp.
+        connect_args = {"timeout": 5.0}
+    connectable = engine_from_config(
+        section,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        connect_args=connect_args,
+    )
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
