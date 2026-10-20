@@ -31,13 +31,18 @@ data/private/
 *.sqlite
 *.sqlite3
 *.db
+*.db-wal
+*.db-shm
+*.db-journal
 *.dump
 models/
 .cache/
 qdrant_storage/
+.pnpm-store/
 
 # OS / editor
 .DS_Store
 Thumbs.db
 .idea/
+.vscode/
 *.log

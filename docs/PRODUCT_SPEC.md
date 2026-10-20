@@ -1,6 +1,8 @@
+> **Historical document.** This file is the original agent product brief used to build the MVP. It is **not** the live product contract. Prefer [ALGORITHM.md](ALGORITHM.md), [EVALUATION.md](EVALUATION.md), [ENGINEERING_DECISIONS.md](ENGINEERING_DECISIONS.md), [RELEASE_READINESS.md](RELEASE_READINESS.md), and the root [README.md](../README.md) for current behavior. Binding design overrides remain in [REVIEW_AMENDMENTS.md](REVIEW_AMENDMENTS.md).
+
 > **Binding amendments:** read [REVIEW_AMENDMENTS.md](REVIEW_AMENDMENTS.md) first. It overrides any conflicting text below.
 
-# CURSOR AGENT PROMPT — SKILLGRAPH
+# CURSOR AGENT PROMPT — SKILLGRAPH *(historical)*
 
 You are a senior knowledge-graph engineer, NLP scientist, full-stack product engineer and open-source maintainer. Develop **SkillGraph**, an explainable skill intelligence and internal career mobility tool. Implement a complete functioning product, not disconnected embeddings or mocked recommendation screens. Read `.cursor/rules/*.mdc` where present.
 
