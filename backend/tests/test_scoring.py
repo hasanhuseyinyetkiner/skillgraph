@@ -154,3 +154,38 @@ def test_empty_requirement_list() -> None:
     assert result.fit_index == 0
     assert result.mandatory_satisfied is True
     assert result.mandatory_total == 0
+
+
+def test_score_is_deterministic_across_runs() -> None:
+    skills = {
+        1: skill(1, "PostgreSQL", ("Postgres",)),
+        2: skill(2, "SQL"),
+        3: skill(3, "dbt"),
+    }
+    related = {3: [RelatedEdge(other_skill_id=2, relation_type="related", weight=0.8)]}
+    requirements = [
+        Requirement(1, 3, 5, True),
+        Requirement(2, 3, 3, False),
+        Requirement(3, 3, 4, True),
+    ]
+    profile = [
+        ProfileSkillState(1, 4, "Postgres"),
+        ProfileSkillState(2, 5, "SQL"),
+    ]
+    first = score_profile_against_role(
+        requirements=requirements,
+        profile_skills=profile,
+        skills=skills,
+        related_index=related,
+    )
+    second = score_profile_against_role(
+        requirements=requirements,
+        profile_skills=profile,
+        skills=skills,
+        related_index=related,
+    )
+    assert first.as_dict() == second.as_dict()
+    assert first.fit_index == second.fit_index
+    assert [row.match_type for row in first.requirements] == [
+        row.match_type for row in second.requirements
+    ]

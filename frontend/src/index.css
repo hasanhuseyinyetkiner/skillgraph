@@ -1,13 +1,16 @@
 @import "tailwindcss";
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --color-accent: #c026d3;
 }
 
@@ -24,17 +27,13 @@ body {
   min-height: 100vh;
   font-family: var(--font-sans);
   background:
-    radial-gradient(1100px 560px at 12% -12%, rgba(192, 38, 211, 0.14), transparent 55%),
-    radial-gradient(900px 480px at 92% 0%, rgba(99, 102, 241, 0.08), transparent 50%),
-    #faf7fc;
+    linear-gradient(180deg, #fdf4ff 0%, #f8fafc 42%, #f1f5f9 100%);
   color: #1e1030;
 }
 
 html.dark body {
   background:
-    radial-gradient(1000px 520px at 10% -10%, rgba(192, 38, 211, 0.22), transparent 55%),
-    radial-gradient(800px 460px at 95% 5%, rgba(168, 85, 247, 0.08), transparent 45%),
-    #0b0712;
+    linear-gradient(180deg, #120818 0%, #0f1117 48%, #0b0d12 100%);
   color: #f3e8ff;
 }
 
@@ -54,4 +53,8 @@ html.dark body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
 }

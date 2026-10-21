@@ -124,7 +124,11 @@ export function MethodologyPage() {
           <MetricTable title="Overlap baseline" values={evaluation.data.overlap} />
           <MetricTable title="Graph-augmented" values={evaluation.data.graph} />
           <Card className="lg:col-span-2 text-xs text-fuchsia-900/60 dark:text-fuchsia-200/60">
-            <p>{evaluation.data.candidate_policy}</p>
+            <p>
+              Macro P@k / nDCG often <strong className="font-semibold">tie</strong> on this fixture set —
+              that is expected, not a hidden graph win. See docs/EVALUATION.md.
+            </p>
+            <p className="mt-2">{evaluation.data.candidate_policy}</p>
             <p className="mt-1">{evaluation.data.label_policy}</p>
             <p className="mt-1">
               Profiles: {evaluation.data.profile_count}

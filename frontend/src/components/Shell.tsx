@@ -9,10 +9,10 @@ import type { Meta } from "../types";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/skills", label: "My Skills", icon: UserRound },
-  { to: "/graph", label: "Graph Explorer", icon: GitBranch },
-  { to: "/roles", label: "Role Explorer", icon: Compass },
-  { to: "/path", label: "Path Builder", icon: Route },
-  { to: "/methodology", label: "Methodology", icon: Sparkles },
+  { to: "/graph", label: "Graph", icon: GitBranch },
+  { to: "/roles", label: "Roles", icon: Compass },
+  { to: "/path", label: "Paths", icon: Route },
+  { to: "/methodology", label: "Method", icon: Sparkles },
 ];
 
 export function Shell() {
@@ -30,58 +30,60 @@ export function Shell() {
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-      <aside className="flex flex-col bg-[#1a0b24] text-fuchsia-50 lg:min-h-screen">
-        <div className="px-5 pb-4 pt-6">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-sm font-bold text-white">S</span>
+    <div className="min-h-screen">
+      <div
+        className="bg-accent px-4 py-1.5 text-center text-xs font-medium tracking-wide text-white"
+        data-testid="demo-banner"
+      >
+        {meta.data?.banner ?? "Local demo · synthetic data"}
+      </div>
+      <header className="border-b border-fuchsia-200/60 bg-white/70 backdrop-blur dark:border-fuchsia-900/40 dark:bg-[#14081c]/80">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
+          <div className="mr-2 flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-md bg-accent font-mono text-xs font-bold text-white">
+              SG
+            </span>
             <div>
               <p className="text-sm font-semibold tracking-tight">SkillGraph</p>
-              <p className="text-xs text-fuchsia-200/60">Exploratory skill ontology</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-fuchsia-700/60 dark:text-fuchsia-300/50">
+                ontology · fit · paths
+              </p>
             </div>
           </div>
-        </div>
-        <nav aria-label="Primary" className="flex gap-1 overflow-x-auto px-3 pb-4 lg:flex-col">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
-                  isActive ? "bg-white/10 text-white" : "text-fuchsia-100/70 hover:bg-white/5"
-                }`
-              }
-            >
-              <item.icon size={16} aria-hidden="true" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="mt-auto px-4 py-4">
+          <nav aria-label="Primary" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+            {NAV.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm ${
+                    isActive
+                      ? "bg-fuchsia-100 text-fuchsia-950 dark:bg-fuchsia-950 dark:text-fuchsia-50"
+                      : "text-fuchsia-900/65 hover:bg-fuchsia-50 dark:text-fuchsia-100/65 dark:hover:bg-fuchsia-950/60"
+                  }`
+                }
+              >
+                <item.icon size={14} aria-hidden="true" />
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm"
+            className="inline-flex items-center gap-1.5 rounded-md border border-fuchsia-200 px-2.5 py-1.5 text-xs dark:border-fuchsia-800"
             aria-pressed={dark}
             data-testid="theme-toggle"
           >
-            {dark ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
-            {dark ? "Light theme" : "Dark theme"}
+            {dark ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+            {dark ? "Light" : "Dark"}
           </button>
         </div>
-      </aside>
-      <div className="min-w-0">
-        <div
-          className="bg-accent px-4 py-2 text-center text-sm font-medium text-white"
-          data-testid="demo-banner"
-        >
-          {meta.data?.banner ?? "Local demo · synthetic data"}
-        </div>
-        <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
-        </main>
-      </div>
+      </header>
+      <main id="main" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <Outlet />
+      </main>
     </div>
   );
 }

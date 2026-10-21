@@ -29,27 +29,25 @@ for (const theme of ["light", "dark"] as const) {
   test(`capture ${theme} portfolio screens`, async ({ page }) => {
     await setTheme(page, theme);
 
-    // Graph Explorer — Cytoscape on live ontology
     await page.goto("/graph");
     await expect(page.getByRole("heading", { name: "Graph Explorer" })).toBeVisible();
     await expect(page.getByTestId("cytoscape-canvas")).toBeVisible();
+    await expect(page.getByTestId("taxonomy-rail")).toBeVisible();
     await expect(page.getByText(/Graph v\d+/)).toBeVisible({ timeout: 30_000 });
-    // Allow cose layout to settle
     await page.waitForTimeout(1500);
     await shot(page, `graph-explorer-${theme}`);
 
-    // Role Explorer — named fit components + magenta gap chart
     await page.goto("/roles");
     await expect(page.getByRole("heading", { name: "Role Explorer" })).toBeVisible();
     await selectByText(page.getByTestId("role-select"), "Analytics Engineer");
     await page.getByTestId("compute-fit").click();
     await expect(page.getByTestId("fit-index")).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/Exploratory fit index/i).first()).toBeVisible();
+    await expect(page.getByTestId("gap-matrix")).toBeVisible();
+    await expect(page.getByTestId("evidence-weights")).toBeVisible();
     await expect(page.getByTestId("gap-chart")).toBeVisible();
     await page.waitForTimeout(800);
     await shot(page, `role-explorer-${theme}`);
 
-    // Path Builder — cycle-safe ordered steps
     await page.goto("/path");
     await expect(page.getByRole("heading", { name: "Path Builder" })).toBeVisible();
     await selectByText(page.getByTestId("path-role-select"), "Analytics Engineer");

@@ -6,10 +6,6 @@ const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(frontendRoot, "..");
 const databaseFile = path.join(repoRoot, "backend", "data", "screenshots.db");
 
-/**
- * Screenshot capture config. Prefer reusing a running API (8105) + Vite (5105).
- * Falls back to starting both against a dedicated SQLite file.
- */
 export default defineConfig({
   testDir: "./e2e",
   testMatch: "screenshots.spec.ts",

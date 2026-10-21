@@ -16,7 +16,6 @@ from tests.conftest import build_settings, reset_database
 def test_health_stays_responsive_during_heavy_request(tmp_path: Path) -> None:
     url = "sqlite:///" + (tmp_path / "health.db").as_posix()
     reset_database(url)
-    # Skip seed for this concurrency probe — we only need the ASGI app + threadpool offload.
     application = create_app(build_settings(url, auto_seed=False))
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -34,7 +33,6 @@ def test_health_stays_responsive_during_heavy_request(tmp_path: Path) -> None:
             raise AssertionError("uvicorn did not start")
 
         base = f"http://127.0.0.1:{port}"
-        # Warm the accept path so cold-start Windows localhost noise does not skew timings.
         warm = httpx.get(f"{base}/health", timeout=5)
         assert warm.status_code == 200
 
@@ -59,7 +57,6 @@ def test_health_stays_responsive_during_heavy_request(tmp_path: Path) -> None:
         def health() -> None:
             try:
                 assert heavy_entered.wait(timeout=5)
-                # Sample several times while the heavy sleep holds a worker thread.
                 samples: list[float] = []
                 codes: list[int] = []
                 deadline_inner = time.time() + 1.5
@@ -84,7 +81,6 @@ def test_health_stays_responsive_during_heavy_request(tmp_path: Path) -> None:
         assert timings["heavy_code"] == 200
         assert timings["health_code"] == 200
         assert float(timings["heavy_s"]) >= 1.5
-        # At least one /health sample must complete quickly while heavy still sleeps off-loop.
         assert float(timings["health_s"]) < 0.75
         assert int(timings["health_samples"]) >= 3
     finally:

@@ -53,6 +53,21 @@ def test_empty_gaps() -> None:
     assert path["cycle_free"] is True
 
 
+def test_path_is_deterministic_across_runs() -> None:
+    edges = [(1, 2), (2, 3), (1, 4), (4, 3)]
+    labels = {1: "SQL", 2: "Modeling", 3: "dbt", 4: "ETL"}
+    kwargs = {
+        "gap_reasons": {3: "mandatory_gap"},
+        "possessed_skill_ids": set(),
+        "prerequisite_edges": edges,
+        "skill_names": labels,
+    }
+    first = build_learning_path(**kwargs)
+    second = build_learning_path(**kwargs)
+    assert first == second
+    assert names(first) == names(second)
+
+
 def test_diamond_keeps_prerequisites_ahead() -> None:
     path = build_learning_path(
         gap_reasons={3: "mandatory_gap"},
