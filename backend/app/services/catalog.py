@@ -18,6 +18,7 @@ from app.db import bump_graph_version
 from app.domain.aliases import build_alias_index, normalize_alias, resolve_skill_id
 from app.domain.constants import (
     COMPONENT_DEFINITIONS,
+    DATASET_VERSION,
     EXACT_MATCH_CREDIT,
     FIT_DISCLAIMER,
     FIT_INDEX_LABEL,
@@ -29,6 +30,7 @@ from app.domain.constants import (
 )
 from app.domain.gold import GOLD_PROFILES
 from app.domain.metrics import evaluate_rankers
+from app.domain.ontology_integrity import ALLOWED_RELATION_TYPES, audit_ontology, relation_type_histogram
 from app.domain.paths import build_learning_path
 from app.domain.scoring import score_profile_against_role
 from app.domain.types import (
@@ -833,15 +835,25 @@ def graph_payload(
 
 
 def ontology_quality(snapshot: GraphSnapshot) -> dict[str, object]:
-    graph = nx.DiGraph()
-    graph.add_nodes_from(snapshot.skills)
-    for source, target in snapshot.prerequisite_edges:
-        graph.add_edge(source, target)
-    cycles: list[list[str]] = []
-    for cycle in nx.simple_cycles(graph, length_bound=8):
-        cycles.append([snapshot.skills[skill_id].canonical_name for skill_id in cycle])
-        if len(cycles) >= 10:
-            break
+    skill_payload = [
+        (skill.id, skill.canonical_name, skill.aliases) for skill in snapshot.skills.values()
+    ]
+    relation_payload = [
+        (rel.source_skill_id, rel.target_skill_id, rel.relation_type) for rel in snapshot.relations
+    ]
+    referenced: set[int] = set()
+    for role in snapshot.roles.values():
+        for requirement in role.requirements:
+            referenced.add(requirement.skill_id)
+    for resource in snapshot.resources:
+        referenced.add(resource.target_skill_id)
+        referenced.update(resource.prerequisite_skill_ids)
+    audit = audit_ontology(
+        skills=skill_payload,
+        relations=relation_payload,
+        prerequisite_edges=list(snapshot.prerequisite_edges),
+        referenced_skill_ids=referenced,
+    )
     alias_count = sum(len(skill.aliases) for skill in snapshot.skills.values())
     return {
         "skill_count": len(snapshot.skills),
@@ -849,8 +861,21 @@ def ontology_quality(snapshot: GraphSnapshot) -> dict[str, object]:
         "resource_count": len(snapshot.resources),
         "relation_count": len(snapshot.relations),
         "alias_count": alias_count,
-        "alias_collisions": [],
-        "prerequisite_cycles": cycles,
+        "alias_collisions": audit["alias_collisions"],
+        "duplicate_aliases_within_skills": audit["duplicate_aliases_within_skills"],
+        "self_edges": audit["self_edges"],
+        "invalid_edge_types": audit["invalid_edge_types"],
+        "orphan_skill_ids": audit["orphan_skill_ids"],
+        "orphan_skill_names": [
+            snapshot.skills[skill_id].canonical_name
+            for skill_id in audit["orphan_skill_ids"]  # type: ignore[union-attr]
+            if skill_id in snapshot.skills
+        ],
+        "missing_prerequisite_targets": audit["missing_prerequisite_targets"],
+        "prerequisite_cycles": audit["prerequisite_cycles"],
+        "broader_narrower_conflicts": audit["broader_narrower_conflicts"],
+        "missing_narrower_inverses_count": len(audit["missing_narrower_inverses"]),  # type: ignore[arg-type]
+        "relation_type_counts": relation_type_histogram(relation_payload),
         "graph_version": snapshot.version,
         "synthetic": True,
         "source": "synthetic-seed-v1",
@@ -871,6 +896,7 @@ def run_evaluation(snapshot: GraphSnapshot) -> dict[str, object]:
     report["graph_version"] = snapshot.version
     report["method_version"] = METHOD_VERSION
     report["weights_version"] = WEIGHTS_VERSION
+    report["dataset_version"] = DATASET_VERSION
     return report
 
 
@@ -900,6 +926,7 @@ def meta_payload(settings: Settings) -> dict[str, object]:
         "semantic_reason": semantic_reason,
         "method_version": METHOD_VERSION,
         "weights_version": WEIGHTS_VERSION,
+        "dataset_version": DATASET_VERSION,
         "weights": {
             "exact_match": EXACT_MATCH_CREDIT,
             "validated_synonym": VALIDATED_SYNONYM_CREDIT,
@@ -1018,14 +1045,21 @@ def delete_skill(session: Session, skill_id: int) -> dict[str, object]:
 def create_relation(session: Session, payload: dict[str, object]) -> dict[str, object]:
     source = int(payload["source_skill_id"])
     target = int(payload["target_skill_id"])
+    relation_type = str(payload["relation_type"])
     if source == target:
         raise DomainError("A relation needs two different skills", 400, "bad_relation")
+    if relation_type not in ALLOWED_RELATION_TYPES:
+        raise DomainError(
+            f"Unsupported relation_type {relation_type!r}",
+            400,
+            "invalid_edge_type",
+        )
     if session.get(Skill, source) is None or session.get(Skill, target) is None:
         raise DomainError("Skill not found", 404, "not_found")
     relation = SkillRelation(
         source_skill_id=source,
         target_skill_id=target,
-        relation_type=str(payload["relation_type"]),
+        relation_type=relation_type,
         weight=float(payload["weight"]),
         provenance=str(payload.get("provenance") or "user"),
     )

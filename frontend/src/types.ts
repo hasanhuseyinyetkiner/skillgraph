@@ -6,6 +6,7 @@ export type Meta = {
   semantic_reason: string;
   method_version: string;
   weights_version: string;
+  dataset_version?: string;
   weights: Record<string, number>;
   level_scale: Record<string, string>;
   component_definitions: Array<{
@@ -78,6 +79,8 @@ export type ScoreComponent = {
   in_fit_index?: boolean;
   note?: string;
   reason?: string;
+  identity_requirement_count?: number;
+  related_requirement_count?: number;
 };
 
 export type Recommendation = {
@@ -92,6 +95,19 @@ export type Recommendation = {
   mandatory_satisfied: boolean;
   mandatory_total: number;
   mandatory_satisfied_count: number;
+  mandatory_gates?: {
+    all_satisfied: boolean;
+    total: number;
+    satisfied_count: number;
+    missing_count: number;
+    statuses?: Record<string, number>;
+  };
+  missing_mandatories?: Array<{
+    skill_id: number;
+    skill_name: string;
+    mandatory_status: string;
+    match_type: string;
+  }>;
   requirements: Array<{
     skill_id: number;
     skill_name: string;

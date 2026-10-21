@@ -27,6 +27,7 @@ test("demo profile → graph → role fit → learning path", async ({ page }) =
   await expect(page.getByTestId("evidence-weights")).toBeVisible();
   await expect(page.getByText(/Exploratory fit index/i).first()).toBeVisible();
   await expect(page.getByText(/not a probability of getting a job/i).first()).toBeVisible();
+  await expect(page.getByText(/incomplete|satisfied/i).first()).toBeVisible();
 
   await page.getByRole("link", { name: "Paths" }).click();
   await expect(page.getByRole("heading", { name: "Path Builder" })).toBeVisible();

@@ -2,10 +2,9 @@
 
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
-  <img alt="SkillGraph — map what you know, discover where skills can take you" src="docs/assets/banner-light.svg" width="100%">
-</picture>
+<p align="center">
+  <img src="docs/assets/logo.png" alt="SkillGraph logo — Map skills. Unlock potential." width="560">
+</p>
 
 # SkillGraph
 
@@ -29,6 +28,15 @@ Explainable skill ontology, role-fit scoring with named match types, and cycle-s
 
 ---
 
+## For HR and talent leaders
+
+| Question | What this tool gives you |
+| --- | --- |
+| **How close is a profile to a role?** | A fit index with named match types: exact, validated synonym, related. |
+| **Are mandatory skills respected?** | Related skills never satisfy a mandatory requirement. Gaps are reported separately. |
+| **What should be learned next?** | Cycle-safe learning paths with resources. Cycles are reported, not hidden. |
+| **What it is not** | Not a hiring probability and not a promotion or rejection decision. Synthetic profiles only. |
+
 ## Why it exists
 
 Internal mobility tools often hide the ontology and the score. Reviewers cannot see why a role ranked where it did.
@@ -46,7 +54,7 @@ SkillGraph keeps the graph, match types, and mandatory gates visible. Fit index 
 | Synthetic demo profile, ontology seed, aliases | Real employee data or live HR systems |
 | Deterministic role-fit + named components | Auto promotion / rejection decisions |
 | Cycle-safe learning paths | Forced path order when prerequisites cycle |
-| P@k / nDCG on five hand-labeled fixtures | Claiming hiring-outcome prediction |
+| P@k / nDCG on ten hand-labeled fixtures | Claiming hiring-outcome prediction |
 | Optional embeddings (composite weight 0) | Requiring a model download for the demo |
 | SQLite local / Postgres in CI | Multi-tenant auth / public SaaS |
 
@@ -61,10 +69,12 @@ Seed (local SQLite): **97** skills, **24** roles, **36** learning resources, **1
 | Graph Explorer | Shipped | Cytoscape + category taxonomy + adjacency inspector |
 | Role Explorer | Shipped | Gap matrix, evidence weight bars, role compare |
 | Path Builder | Shipped | Cycle-safe prerequisite order + resources |
-| Evaluation | Shipped | P@k / R@k / nDCG@k; macro graph tie documented |
+| Evaluation | Shipped | P@k / R@k / nDCG@k on `gold-fixtures-1.1.0` (10 profiles); honest tie flags |
+| Ontology integrity | Shipped | Alias collisions, self-edges, orphans, cycles, broader/narrower audit |
 | Versioned cache | Shipped | `graph_version` across API workers |
 | Embeddings | Optional | Off by default; composite weight `0` when present |
 | Multi-user auth | Not shipped | Loopback demo only |
+| Local Docker Compose | **BLOCKED** on this host | CI still defines `compose-smoke`; do not claim local Docker success |
 
 ## Architecture
 
@@ -103,7 +113,7 @@ Deep dive: [docs/ALGORITHM.md](docs/ALGORITHM.md) · [docs/EVALUATION.md](docs/E
 
 ## Quick start
 
-Native path on Windows 11 with `uv` + `pnpm`. Docker Compose is exercised by the `compose-smoke` CI job — local Docker is not required.
+Native path on Windows 11 with `uv` + `pnpm`. Local Docker Compose is **BLOCKED** on the authoring host; the `compose-smoke` CI job remains defined for machines with Docker.
 
 ```powershell
 # Backend — http://127.0.0.1:8105
@@ -140,7 +150,7 @@ Default DB: `backend/data/skillgraph.db`. Overrides: [`.env.example`](.env.examp
   </picture>
 </p>
 
-Playwright covers the same arc: `demo profile → graph → role fit → learning path` (`frontend/e2e/demo-flow.spec.ts`).
+Playwright covers the same arc: `demo profile → graph → role fit → learning path` (`frontend/e2e/demo-flow.spec.ts`) plus an a11y smoke (`frontend/e2e/a11y-smoke.spec.ts`). CI runs `pnpm test:e2e` (WFO-style job).
 
 ## Scoring and paths
 
@@ -156,14 +166,14 @@ Full rules: [docs/ALGORITHM.md](docs/ALGORITHM.md).
 
 ## Evaluation
 
-Measured via `GET /api/evaluation` on five hand-labeled synthetic profiles (`method_version=skg-baseline-1.0.0`). Grades are fixture judgments on the demo ontology — **not** hiring outcomes.
+Measured via `GET /api/evaluation` on **ten** hand-labeled synthetic profiles (`method_version=skg-baseline-1.0.0`, `dataset_version=gold-fixtures-1.1.0`). Grades are fixture judgments on the demo ontology — **not** hiring outcomes.
 
 | Method | P@3 | P@5 | R@3 | R@5 | nDCG@3 | nDCG@5 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Overlap baseline | 1.0000 | 0.9600 | 0.5450 | 0.8583 | 0.9860 | 0.9754 |
-| Graph-augmented | 1.0000 | 0.9600 | 0.5450 | 0.8583 | 0.9860 | 0.9754 |
+| Overlap baseline | 0.8667 | 0.8400 | 0.5175 | 0.9092 | 0.8152 | 0.8908 |
+| Graph-augmented | 0.9000 | 0.8400 | 0.6175 | 0.9092 | 0.9383 | 0.9684 |
 
-**Honest read:** macro ranking metrics **tie** — not a hidden win for the graph. Top-k relevance-grade sequences match on every fixture, so P@k / R@k / nDCG@k cannot move. Overlap is canonical-name equality only (no aliases); graph resolves aliases and weak related credit. Per-role coverage still differs (e.g. `synonym_specialist` → Backend Engineer: graph **0.546** vs overlap **0.143**) without flipping top-k grades. Related-edge ranking gains are **unproven** on this set. Full analysis: [docs/EVALUATION.md](docs/EVALUATION.md).
+**Honest read:** on this expanded set `macro_metrics_tie=false` — graph is higher on P@3 / R@3 / nDCG@3 / nDCG@5; P@5 and R@5 still match. The original five fixtures still show identical top-k grade sequences; divergence comes from cold-start / missing-mandatory / misleading-related scenarios. Related credit **never** satisfies mandatory gates. Do not market these numbers as hiring prediction. Full analysis: [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## API
 
@@ -195,17 +205,20 @@ pnpm screenshots   # writes docs/screenshots/*.png
 
 | Check | Result (2026-10-21) |
 | --- | --- |
-| `uv run pytest -q` | **34 passed**, 1 skipped (Postgres marker) |
+| `uv run pytest -q` | **47 passed**, 1 skipped (Postgres marker) |
 | `pnpm test` (Vitest) | **1 passed** |
 | Eval metrics | Live `GET /api/evaluation` (table above) |
-| Playwright | demo arc + 6 screenshots (graph / role / path × light+dark) |
+| Playwright | **2 passed** critical+a11y (`demo-flow`, `a11y-smoke`); screenshots via `pnpm screenshots` (real captures refreshed this session); CI `e2e` job added |
+| Local Docker Compose | **BLOCKED** (no Docker on this host) |
 
-`compose.yaml` binds API `127.0.0.1:8105`, web `127.0.0.1:5105`, Postgres host `5405`. CI runs Ruff + pytest (Postgres service), frontend lint/tsc/vitest/build, and `compose-smoke`.
+`compose.yaml` binds API `127.0.0.1:8105`, web `127.0.0.1:5105`, Postgres host `5405`. CI runs markdown-links, Ruff + pytest (Postgres service), frontend lint/tsc/vitest/build, Playwright `e2e`, and `compose-smoke`.
 
 ## Security, privacy, and limitations
 
 > [!IMPORTANT]
 > Synthetic profiles only. Fit scores are exploratory — never a probability of getting a job, a promotion decision, or a person score. No protected attributes are used.
+
+Policy: [`SECURITY.md`](SECURITY.md).
 
 - Loopback bind by default (`ALLOW_NETWORK_BIND=true` required otherwise).
 - No multi-user auth in this MVP.
@@ -218,7 +231,9 @@ pnpm screenshots   # writes docs/screenshots/*.png
 | Doc | Contents |
 | --- | --- |
 | [`docs/ALGORITHM.md`](docs/ALGORITHM.md) | Normalization, edge types, credits, gates, paths |
-| [`docs/EVALUATION.md`](docs/EVALUATION.md) | Macro tie, coverage cases, unproven claims |
+| [`docs/EVALUATION.md`](docs/EVALUATION.md) | Expanded fixtures, macro non-tie, grade-sequence ties |
+| [`docs/PERFORMANCE_BASELINE.md`](docs/PERFORMANCE_BASELINE.md) | Measured fit/path/eval latency (SQLite local) |
+| [`SECURITY.md`](SECURITY.md) | Loopback demo boundaries; not a production security claim |
 | [`frontend/README.md`](frontend/README.md) | Frontend setup, scripts, pages |
 | [`LICENSE`](LICENSE) | MIT © 2026 Hasan Hüseyin Yetkiner |
 

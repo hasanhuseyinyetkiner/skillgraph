@@ -168,6 +168,23 @@ export function RoleExplorerPage() {
                   </dd>
                 </div>
               </dl>
+              {(recommend.data.missing_mandatories?.length ?? 0) > 0 ? (
+                <div className="mt-4" data-testid="missing-mandatories">
+                  <p className="text-xs font-medium text-fuchsia-900/60 dark:text-fuchsia-200/60">
+                    Missing mandatory gates
+                  </p>
+                  <ul className="mt-1 list-inside list-disc text-sm">
+                    {recommend.data.missing_mandatories!.map((row) => (
+                      <li key={row.skill_id}>
+                        {row.skill_name}{" "}
+                        <span className="font-mono text-xs text-fuchsia-900/50">
+                          ({row.mandatory_status} · {row.match_type})
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </Card>
             <EvidenceWeightBreakdown
               label="Evidence weight breakdown"

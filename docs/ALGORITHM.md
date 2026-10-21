@@ -108,6 +108,25 @@ So `Postgres` does **not** hit `PostgreSQL` in the overlap baseline, while the g
 
 ---
 
+## Explainable recommendation payload
+
+`ScoreResult.as_dict()` (and `/api/recommendations`) exposes:
+
+| Field | Role |
+| --- | --- |
+| `components.exact_match` / `validated_synonym` / `related_skill` | Fit-index contributions |
+| `components.level_adequacy` | Average identity level factor (not re-added) |
+| `components.evidence` | Counts of identity / related requirement rows |
+| `components.semantic_similarity` | Display-only; composite weight 0 |
+| `mandatory_gates` | Gate totals / status histogram |
+| `missing_mandatories` | Unsatisfied mandatory rows (`skill_name`, `mandatory_status`, `match_type`) |
+
+Related / semantic credit **never** flips `mandatory_status` to `satisfied`.
+
+## Ontology integrity (`GET /api/ontology/quality`)
+
+`app/domain/ontology_integrity.py` audits duplicate aliases, alias collisions, self-edges, invalid edge types, orphans, missing prerequisite endpoints, prerequisite cycles, and broader/narrower conflicts. Seeded `broader` edges without inverse `narrower` are counted as informational missing inverses, not hard conflicts. The intentional Legacy SOAP cycle remains visible under `prerequisite_cycles`.
+
 ## Versioned NetworkX cache (`graph_version`)
 
 PostgreSQL / SQLite `graph_meta.graph_version` increments in the **same transaction** as ontology edits (skills, relations, roles). The in-memory NetworkX snapshot reloads when the version changes, so multiple API workers stay consistent. `/ready` and `GET /api/graph` expose the current version. Every recommendation and `RecommendationTrace` stores `graph_version`, `method_version`, and `weights_version`.

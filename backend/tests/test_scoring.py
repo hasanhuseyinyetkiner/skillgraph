@@ -56,6 +56,54 @@ def test_synonym_scores_below_exact_and_overlap_misses_alias() -> None:
     assert overlap_baseline_score(requirements=requirements, profile_skills=profile, skills=skills) == 0
 
 
+def test_explainable_components_gates_and_missing_mandatories() -> None:
+    skills = {
+        1: skill(1, "PostgreSQL", ("Postgres",)),
+        2: skill(2, "dbt"),
+        3: skill(3, "SQL"),
+        4: skill(4, "Git"),
+    }
+    related = {2: [RelatedEdge(other_skill_id=3, relation_type="related", weight=0.8)]}
+    result = score_profile_against_role(
+        requirements=[
+            Requirement(1, 3, 5, True),
+            Requirement(2, 3, 5, True),
+            Requirement(4, 4, 3, True),
+            Requirement(3, 3, 2, False),
+        ],
+        profile_skills=[
+            ProfileSkillState(1, 4, "Postgres"),
+            ProfileSkillState(3, 5, "SQL"),
+            ProfileSkillState(4, 2, "Git"),
+        ],
+        skills=skills,
+        related_index=related,
+    )
+    payload = result.as_dict()
+    components = payload["components"]
+    assert set(components) >= {
+        "exact_match",
+        "validated_synonym",
+        "related_skill",
+        "level_adequacy",
+        "evidence",
+        "semantic_similarity",
+    }
+    assert components["validated_synonym"]["contribution"] > 0
+    assert components["related_skill"]["contribution"] > 0
+    assert components["level_adequacy"]["value"] is not None
+    assert components["evidence"]["identity_requirement_count"] >= 1
+    assert components["evidence"]["related_requirement_count"] >= 1
+    assert components["evidence"]["in_fit_index"] is False
+    assert payload["mandatory_gates"]["all_satisfied"] is False
+    assert payload["mandatory_gates"]["missing_count"] >= 1
+    names = {row["skill_name"] for row in payload["missing_mandatories"]}
+    assert "dbt" in names
+    assert "Git" in names
+    assert payload["mandatory_satisfied"] is False
+    assert "not a probability of getting a job" in payload["disclaimer"]
+
+
 def test_mandatory_gap_is_not_hidden_by_related_or_semantic_scores() -> None:
     skills = {
         1: skill(1, "dbt"),

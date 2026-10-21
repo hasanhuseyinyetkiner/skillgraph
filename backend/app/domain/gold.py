@@ -10,6 +10,9 @@ Rules used when the grades were assigned (not derived from the scorer):
 
 These grades are judgments about the synthetic ontology. They are not evidence
 from employees, applicants, or hiring outcomes.
+
+Dataset version lives in ``app.domain.constants.DATASET_VERSION``. Expanding
+fixtures must not be tuned to invent a graph ranking win over overlap.
 """
 
 from __future__ import annotations
@@ -128,6 +131,110 @@ GOLD_PROFILES: list[dict[str, object]] = [
             "Data Analyst": 0,
             "UX Designer": 0,
             "Product Manager": 0,
+        },
+    },
+    {
+        "id": "alias_heavy",
+        "scenario": "alias-heavy",
+        "skills": [
+            ("PostgreSQL", 4, "Postgres"),
+            ("JavaScript", 4, "js"),
+            ("Excel", 3, "ms excel"),
+            ("Power BI", 3, "powerbi"),
+            ("scikit-learn", 3, "sklearn"),
+            ("Git", 3, "git"),
+        ],
+        "labels": {
+            "Backend Engineer": 3,
+            "Full Stack Engineer": 2,
+            "BI Developer": 2,
+            "Data Analyst": 1,
+            "Data Scientist": 1,
+            "QA Engineer": 0,
+            "UX Designer": 0,
+            "Product Manager": 0,
+        },
+    },
+    {
+        "id": "cold_start",
+        "scenario": "cold-start",
+        "skills": [
+            ("Excel", 2, "Excel"),
+            ("Git", 1, "Git"),
+        ],
+        "labels": {
+            "Data Analyst": 1,
+            "QA Engineer": 0,
+            "Backend Engineer": 0,
+            "Frontend Engineer": 0,
+            "DevOps Engineer": 0,
+            "Product Manager": 0,
+            "UX Designer": 0,
+            "Security Analyst": 0,
+        },
+    },
+    {
+        "id": "missing_mandatory_gap",
+        "scenario": "missing-mandatory",
+        "skills": [
+            ("SQL", 4, "SQL"),
+            ("Python", 4, "Python"),
+            ("Git", 3, "Git"),
+            ("pandas", 3, "pandas"),
+        ],
+        "labels": {
+            "Analytics Engineer": 2,
+            "Data Analyst": 2,
+            "Data Engineer": 1,
+            "Backend Engineer": 1,
+            "ML Engineer": 0,
+            "QA Engineer": 0,
+            "UX Designer": 0,
+            "Product Manager": 0,
+        },
+    },
+    {
+        "id": "misleading_related",
+        "scenario": "misleading-related",
+        "skills": [
+            ("SQL", 5, "SQL"),
+            ("PostgreSQL", 4, "Postgres"),
+            ("Git", 3, "Git"),
+        ],
+        "labels": {
+            "Data Analyst": 2,
+            "Backend Engineer": 2,
+            "Analytics Engineer": 1,
+            "Data Engineer": 1,
+            "QA Engineer": 0,
+            "UX Designer": 0,
+            "Product Manager": 0,
+            "Security Analyst": 0,
+        },
+    },
+    {
+        "id": "multi_role_ambiguous",
+        "scenario": "multi-role",
+        "skills": [
+            ("Manual Testing", 4, "Manual Testing"),
+            ("Test Planning", 4, "Test Planning"),
+            ("Bug Reporting", 4, "Bug Reporting"),
+            ("Test Automation", 4, "Test Automation"),
+            ("Selenium", 4, "Selenium"),
+            ("JavaScript", 3, "JavaScript"),
+            ("API Testing", 4, "API Testing"),
+            ("Git", 3, "Git"),
+            ("Pytest", 3, "Pytest"),
+        ],
+        "labels": {
+            "QA Engineer": 3,
+            "Automation Engineer": 3,
+            "SDET": 3,
+            "QA Lead": 2,
+            "Frontend Engineer": 1,
+            "Backend Engineer": 0,
+            "Data Analyst": 0,
+            "DevOps Engineer": 0,
         },
     },
 ]

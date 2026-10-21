@@ -219,6 +219,18 @@ def score_profile_against_role(
     semantic_mean = sum(semantic_values) / len(semantic_values) if semantic_values else None
     mandatory_rows = [row for row in rows if row.mandatory]
     satisfied = [row for row in mandatory_rows if row.mandatory_status == "satisfied"]
+    missing_mandatories = [
+        {
+            "skill_id": row.skill_id,
+            "skill_name": row.skill_name,
+            "mandatory_status": row.mandatory_status,
+            "match_type": row.match_type,
+        }
+        for row in mandatory_rows
+        if row.mandatory_status != "satisfied"
+    ]
+    identity_count = sum(1 for row in rows if row.match_type in {"exact", "validated_synonym"})
+    related_count = sum(1 for row in rows if row.match_type == "related")
     components: dict[str, object] = {
         "exact_match": {"contribution": exact, "in_fit_index": True},
         "validated_synonym": {"contribution": synonym, "in_fit_index": True},
@@ -228,10 +240,29 @@ def score_profile_against_role(
             "in_fit_index": False,
             "note": "Average level factor on identity matches. Already applied inside credits.",
         },
+        "evidence": {
+            "identity_requirement_count": identity_count,
+            "related_requirement_count": related_count,
+            "in_fit_index": False,
+            "note": (
+                "Evidence counts only. Soft related credit never satisfies a mandatory gate; "
+                "see missing_mandatories and mandatory_gates."
+            ),
+        },
         "semantic_similarity": {
             "value": semantic_mean,
             "in_fit_index": False,
             "reason": semantic_reason if semantic_mean is None else "display_only",
+        },
+    }
+    mandatory_gates = {
+        "all_satisfied": all(row.mandatory_status == "satisfied" for row in mandatory_rows),
+        "total": len(mandatory_rows),
+        "satisfied_count": len(satisfied),
+        "missing_count": len(missing_mandatories),
+        "statuses": {
+            status: sum(1 for row in mandatory_rows if row.mandatory_status == status)
+            for status in sorted({row.mandatory_status for row in mandatory_rows})
         },
     }
     return ScoreResult(
@@ -240,9 +271,11 @@ def score_profile_against_role(
         weights=active,
         requirements=rows,
         components=components,
-        mandatory_satisfied=all(row.mandatory_status == "satisfied" for row in mandatory_rows),
+        mandatory_satisfied=bool(mandatory_gates["all_satisfied"]),
         mandatory_total=len(mandatory_rows),
         mandatory_satisfied_count=len(satisfied),
+        missing_mandatories=missing_mandatories,
+        mandatory_gates=mandatory_gates,
         semantic_reason=semantic_reason if semantic_mean is None else "display_only",
     )
 

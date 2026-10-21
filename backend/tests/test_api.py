@@ -64,6 +64,10 @@ def test_demo_fit_breakdown_path_and_skill_edit(client: TestClient) -> None:
     assert rows["Data Modeling"]["match_type"] == "related"
     assert rows["Data Modeling"]["mandatory_status"] == "missing"
     assert recommendation["mandatory_satisfied"] is False
+    assert recommendation["missing_mandatories"]
+    assert recommendation["mandatory_gates"]["all_satisfied"] is False
+    assert "dbt" in {row["skill_name"] for row in recommendation["missing_mandatories"]}
+    assert "evidence" in recommendation["components"]
     assert recommendation["trace_id"] > 0
     assert sum(recommendation["match_type_counts"].values()) == len(recommendation["requirements"])
 
@@ -187,8 +191,21 @@ def test_compare_and_summary_budget(client: TestClient) -> None:
 
 def test_evaluation_reports_measured_metrics(client: TestClient) -> None:
     report = client.get("/api/evaluation").json()
-    print("EVAL_METRICS " + json.dumps({"overlap": report["overlap"], "graph": report["graph"]}))
-    assert report["profile_count"] == 5
+    print(
+        "EVAL_METRICS "
+        + json.dumps(
+            {
+                "dataset_version": report["dataset_version"],
+                "macro_metrics_tie": report["macro_metrics_tie"],
+                "overlap": report["overlap"],
+                "graph": report["graph"],
+            }
+        )
+    )
+    assert report["profile_count"] == 10
+    assert report["dataset_version"] == "gold-fixtures-1.1.0"
+    assert "macro_metrics_tie" in report
+    assert "tie_note" in report
     expected_keys = {
         "precision_at_3",
         "precision_at_5",
@@ -204,6 +221,17 @@ def test_evaluation_reports_measured_metrics(client: TestClient) -> None:
     synonym = next(item for item in report["per_profile"] if item["profile"] == "synonym_specialist")
     backend = next(item for item in synonym["roles"] if item["role"] == "Backend Engineer")
     assert backend["graph"] > backend["overlap"]
+    # Coverage can differ without flipping macro ranking — do not require a graph P@k win.
+    for item in report["per_profile"]:
+        assert "ranking_grade_ties" in item
+    scenarios = {item.get("scenario") for item in report["per_profile"] if item.get("scenario")}
+    assert scenarios >= {
+        "alias-heavy",
+        "cold-start",
+        "missing-mandatory",
+        "misleading-related",
+        "multi-role",
+    }
 
 
 def test_demo_reset_restores_postgres_alias(client: TestClient) -> None:

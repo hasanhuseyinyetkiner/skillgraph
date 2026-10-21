@@ -129,6 +129,8 @@ class ScoreResult:
     mandatory_total: int
     mandatory_satisfied_count: int
     semantic_reason: str
+    missing_mandatories: list[dict[str, object]] | None = None
+    mandatory_gates: dict[str, object] | None = None
 
     def as_dict(self) -> dict[str, object]:
         from app.domain.constants import FIT_DISCLAIMER, FIT_INDEX_LABEL, METHOD_VERSION
@@ -150,6 +152,14 @@ class ScoreResult:
             "mandatory_satisfied": self.mandatory_satisfied,
             "mandatory_total": self.mandatory_total,
             "mandatory_satisfied_count": self.mandatory_satisfied_count,
+            "mandatory_gates": self.mandatory_gates
+            or {
+                "all_satisfied": self.mandatory_satisfied,
+                "total": self.mandatory_total,
+                "satisfied_count": self.mandatory_satisfied_count,
+                "missing_count": self.mandatory_total - self.mandatory_satisfied_count,
+            },
+            "missing_mandatories": list(self.missing_mandatories or []),
             "requirements": [row.as_dict() for row in self.requirements],
             "semantic": {
                 "available": self.components.get("semantic_similarity", {}).get("value")

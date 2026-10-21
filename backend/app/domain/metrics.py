@@ -126,18 +126,40 @@ def evaluate_rankers(
                 buckets[method][f"precision_at_{k}"].append(precision_at_k(rels, k))
                 buckets[method][f"recall_at_{k}"].append(recall_at_k(rels, k))
                 buckets[method][f"ndcg_at_{k}"].append(ndcg_at_k(rels, k))
-        per_profile.append({"profile": profile["id"], "roles": ranking_rows})
+        grade_ties = {
+            f"top_{k}_grades_identical": graph_rels[:k] == overlap_rels[:k] for k in k_values
+        }
+        per_profile.append(
+            {
+                "profile": profile["id"],
+                "scenario": profile.get("scenario"),
+                "roles": ranking_rows,
+                "ranking_grade_ties": grade_ties,
+            }
+        )
 
     def summarize(method: str) -> dict[str, float]:
         return {key: _macro(values) for key, values in buckets[method].items()}
 
+    overlap_summary = summarize("overlap")
+    graph_summary = summarize("graph")
+    macro_tie = all(
+        abs(overlap_summary[key] - graph_summary[key]) < 1e-12 for key in overlap_summary
+    )
     return {
         "k_values": list(k_values),
         "profile_count": len(profiles),
         "candidate_policy": "hand-labeled candidate set per profile; unlabeled roles are excluded",
         "label_policy": "grades are hand-assigned from the fixture rules, not copied from the scorer",
         "relevance_threshold": "grade > 0 counts as relevant for Precision@K and Recall@K",
-        "overlap": summarize("overlap"),
-        "graph": summarize("graph"),
+        "overlap": overlap_summary,
+        "graph": graph_summary,
+        "macro_metrics_tie": macro_tie,
+        "tie_note": (
+            "Macro P@k / R@k / nDCG@k match when both methods produce the same "
+            "top-k relevance-grade sequences. A tie is not a hidden graph win."
+            if macro_tie
+            else "Macro ranking metrics differ between overlap and graph on this fixture set."
+        ),
         "per_profile": per_profile,
     }

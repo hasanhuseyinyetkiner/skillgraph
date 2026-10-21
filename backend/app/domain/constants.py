@@ -7,6 +7,7 @@ weight 0 so it cannot hide a failed mandatory requirement.
 
 METHOD_VERSION = "skg-baseline-1.0.0"
 WEIGHTS_VERSION = "weights-1.0.0"
+DATASET_VERSION = "gold-fixtures-1.1.0"
 
 EXACT_MATCH_CREDIT = 1.0
 VALIDATED_SYNONYM_CREDIT = 0.95
@@ -62,6 +63,12 @@ COMPONENT_DEFINITIONS: tuple[dict[str, object], ...] = (
         "credit": None,
         "in_fit_index": False,
         "summary": "Average level factor across identity matches. Already applied inside credits, so it is not added again.",
+    },
+    {
+        "key": "evidence",
+        "credit": None,
+        "in_fit_index": False,
+        "summary": "Counts of requirements with identity or related evidence. Credit weights live in exact/synonym/related contributions.",
     },
     {
         "key": "semantic_similarity",

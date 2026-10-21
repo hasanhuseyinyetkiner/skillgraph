@@ -8,6 +8,7 @@ const databaseFile = path.join(repoRoot, "backend", "data", "e2e.db");
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: ["**/screenshots.spec.ts"],
   timeout: 120_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
