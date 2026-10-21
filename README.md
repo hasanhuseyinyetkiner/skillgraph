@@ -99,7 +99,7 @@ flowchart LR
 | UI | React + Vite + Cytoscape + Recharts | Graph explorer + gap / evidence views |
 | Data | SQLite local / Postgres in CI | Same models; compose verified in `compose-smoke` |
 
-Deep dive: [docs/ALGORITHM.md](docs/ALGORITHM.md) · [docs/ENGINEERING_DECISIONS.md](docs/ENGINEERING_DECISIONS.md).
+Deep dive: [docs/ALGORITHM.md](docs/ALGORITHM.md) · [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Quick start
 
@@ -219,8 +219,6 @@ pnpm screenshots   # writes docs/screenshots/*.png
 | --- | --- |
 | [`docs/ALGORITHM.md`](docs/ALGORITHM.md) | Normalization, edge types, credits, gates, paths |
 | [`docs/EVALUATION.md`](docs/EVALUATION.md) | Macro tie, coverage cases, unproven claims |
-| [`docs/ENGINEERING_DECISIONS.md`](docs/ENGINEERING_DECISIONS.md) | Cache versioning, embeddings optional, eval honesty |
-| [`docs/GITHUB_METADATA.md`](docs/GITHUB_METADATA.md) | About text and topics |
 | [`frontend/README.md`](frontend/README.md) | Frontend setup, scripts, pages |
 | [`LICENSE`](LICENSE) | MIT © 2026 Hasan Hüseyin Yetkiner |
 
