@@ -31,14 +31,12 @@ Leave empty unless a public demo URL is deliberately published and kept online.
 
 ## Pin rationale
 
-Portfolio piece for explainable skill ontology + deterministic career-path recommendations with **measured** ranking metrics on synthetic fixtures — including an honest report when graph-augmented scoring **ties** the overlap baseline on macro P@k / nDCG, while alias resolution still lifts per-role coverage.
+Portfolio piece for explainable skill ontology + deterministic career-path recommendations with measured ranking metrics on synthetic fixtures — including an honest report when graph-augmented scoring ties the overlap baseline on macro P@k / nDCG, while alias resolution still lifts per-role coverage.
 
-## Suggested release notes checklist
-
-See [RELEASE_READINESS.md](RELEASE_READINESS.md) for the full gate list. Short version:
+## Before tagging a release
 
 - Confirm CI green (`backend`, `frontend`, `compose-smoke`).
 - Refresh screenshots with `cd frontend && pnpm screenshots` if UI changed.
 - Re-run `GET /api/evaluation` and update README + `docs/EVALUATION.md` with actual numbers — keep macro ties visible.
 - Do not claim job-probability, bias-free, or production-ready language.
-- License still pending owner decision until an SPDX file is added.
+- License is MIT ([LICENSE](../LICENSE)).

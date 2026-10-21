@@ -28,15 +28,15 @@ Config: [`.env.example`](.env.example). Leave `VITE_API_BASE` empty to use the V
 | --- | --- |
 | `/` | Dashboard |
 | `/skills` | My Skills (demo profile Avery Chen) |
-| `/graph` | Graph Explorer (Cytoscape on `GET /api/graph`) |
-| `/roles` | Role Explorer (named fit components) |
+| `/graph` | Graph Explorer (taxonomy + Cytoscape + adjacency) |
+| `/roles` | Role Explorer (gap matrix + evidence weights) |
 | `/path` | Path Builder (cycle-safe learning path) |
 | `/methodology` | Scoring / eval notes in-app |
 
 ## Screenshots
 
-Authentic captures live under [`docs/screenshots/`](../docs/screenshots/). Regenerate with `pnpm screenshots` while API + `pnpm dev` (or Playwright webServer) are available. Do not invent UI mockups.
+Authentic captures live under [`docs/screenshots/`](../docs/screenshots/). Regenerate with `pnpm screenshots` while API + `pnpm dev` (or Playwright webServer) are available.
 
 ## Scope reminder
 
-Fit scores shown in Role Explorer / Path Builder are an **exploratory coverage index** — not a hiring probability or employment decision. See [`docs/ALGORITHM.md`](../docs/ALGORITHM.md).
+Fit index is exploratory coverage only — never a hiring probability or person score. Synthetic data.

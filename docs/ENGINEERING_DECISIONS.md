@@ -50,7 +50,7 @@ Macro P@k / nDCG can **tie** between overlap and graph-augmented rankers while p
 
 ## Licensing
 
-No `LICENSE` file yet. README states “License: pending owner decision”. Do not invent SPDX claims.
+MIT License — Copyright (c) 2026 Hasan Hüseyin Yetkiner. See root [`LICENSE`](../LICENSE).
 
 ## Out of scope for this MVP
 
