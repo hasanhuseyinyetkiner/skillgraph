@@ -1,240 +1,115 @@
-<a id="readme-top"></a>
-
-<div align="center">
-
-<p align="center">
-  <img src="docs/assets/logo.png" alt="SkillGraph logo — Map skills. Unlock potential." width="560">
-</p>
+<p align="center"><img src="docs/assets/logo.png" width="200" alt="SkillGraph logo"></p>
 
 # SkillGraph
 
-**Map what you know. Discover where your skills can take you.**
-
-Explainable skill ontology, role-fit scoring with named match types, and cycle-safe learning paths. Deterministic by default; embeddings optional. Accent `#C026D3`.
+**Explore a skill ontology, explain role fit, and build learning paths from visible gaps.**
 
 [![CI](https://github.com/hasanhuseyinyetkiner/skillgraph/actions/workflows/ci.yml/badge.svg)](https://github.com/hasanhuseyinyetkiner/skillgraph/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Overview](#why-it-exists) · [Demo](#demo) · [Architecture](#architecture) · [Algorithm](#scoring-and-paths) · [Evaluation](#evaluation) · [Quick start](#quick-start) · [Docs](#documentation)
-
-</div>
+[Highlights](#highlights) · [Architecture](#architecture) · [Scoring](#scoring-and-paths) · [Evaluation](#evaluation) · [Quick start](#quick-start) · [Documentation](#documentation)
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/graph-explorer-dark.png">
-    <img alt="Graph Explorer with taxonomy rail, Cytoscape canvas, and adjacency panel" src="docs/screenshots/graph-explorer-light.png" width="100%">
+    <img src="docs/screenshots/graph-explorer-light.png" alt="Graph Explorer showing the synthetic skill ontology, category filter and adjacency panel" width="100%">
   </picture>
 </p>
 
----
+The Graph Explorer renders the seeded ontology with Cytoscape. Explore a category and select a node to inspect its relations; then review a [role fit](docs/screenshots/role-explorer-light.png) or [learning path](docs/screenshots/path-builder-light.png).
 
-## For HR and talent leaders
+[Watch the real graph → role fit → learning path workflow (GIF)](docs/assets/demo.gif). The screenshot above is a static alternative; regenerate the animation with `node scripts/record-demo.mjs` after installing the project dependencies, Playwright Chromium and FFmpeg. The isolated synthetic data and recording are retained in a temporary folder.
 
-| Question | What this tool gives you |
-| --- | --- |
-| **How close is a profile to a role?** | A fit index with named match types: exact, validated synonym, related. |
-| **Are mandatory skills respected?** | Related skills never satisfy a mandatory requirement. Gaps are reported separately. |
-| **What should be learned next?** | Cycle-safe learning paths with resources. Cycles are reported, not hidden. |
-| **What it is not** | Not a hiring probability and not a promotion or rejection decision. Synthetic profiles only. |
+> Local, single-user MVP using synthetic profiles. The fit index is exploratory coverage, not a hiring probability or an employment decision.
 
-## Why it exists
+## Highlights
 
-Internal mobility tools often hide the ontology and the score. Reviewers cannot see why a role ranked where it did.
-
-SkillGraph keeps the graph, match types, and mandatory gates visible. Fit index is an exploratory coverage measure — not a hiring probability or person score.
-
-**Who it is for:** engineers reviewing knowledge-graph / recommender design; HR-tech reviewers checking explainable career-path demos.
-
-**Status:** local MVP / demo. Loopback bind by default. No multi-user auth.
-
-## Scope
-
-| In scope | Out of scope |
-| --- | --- |
-| Synthetic demo profile, ontology seed, aliases | Real employee data or live HR systems |
-| Deterministic role-fit + named components | Auto promotion / rejection decisions |
-| Cycle-safe learning paths | Forced path order when prerequisites cycle |
-| P@k / nDCG on ten hand-labeled fixtures | Claiming hiring-outcome prediction |
-| Optional embeddings (composite weight 0) | Requiring a model download for the demo |
-| SQLite local / Postgres in CI | Multi-tenant auth / public SaaS |
-
-Seed (local SQLite): **97** skills, **24** roles, **36** learning resources, **103** relations.
-
-## Capabilities
-
-| Area | Status | Notes |
-| --- | --- | --- |
-| Skills inventory | Shipped | Demo profile (Avery Chen); export / erase / reset |
-| Ontology | Shipped | Aliases; prerequisite / related / broader / narrower |
-| Graph Explorer | Shipped | Cytoscape + category taxonomy + adjacency inspector |
-| Role Explorer | Shipped | Gap matrix, evidence weight bars, role compare |
-| Path Builder | Shipped | Cycle-safe prerequisite order + resources |
-| Evaluation | Shipped | P@k / R@k / nDCG@k on `gold-fixtures-1.1.0` (10 profiles); honest tie flags |
-| Ontology integrity | Shipped | Alias collisions, self-edges, orphans, cycles, broader/narrower audit |
-| Versioned cache | Shipped | `graph_version` across API workers |
-| Embeddings | Optional | Off by default; composite weight `0` when present |
-| Multi-user auth | Not shipped | Loopback demo only |
-| Local Docker Compose | **BLOCKED** on this host | CI still defines `compose-smoke`; do not claim local Docker success |
+- **A visible ontology.** Explore skills, aliases and typed relations in a graph with an adjacency inspector.
+- **Explainable role fit.** Exact, validated synonym and related-skill matches contribute named evidence; gaps and mandatory requirements remain visible.
+- **Cycle-aware learning paths.** Prerequisite expansion finds a feasible order when possible and reports cycles instead of inventing one.
+- **Deterministic by default.** The demo and evaluation do not require embeddings or a model download; optional semantic similarity has zero composite weight.
+- **Inspectable evaluation.** Compare the graph-augmented ranker with an overlap baseline on hand-labeled synthetic fixtures.
 
 ## Architecture
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "primaryColor": "#C026D3",
-    "primaryTextColor": "#ffffff",
-    "primaryBorderColor": "#86198F",
-    "lineColor": "#C026D3",
-    "secondaryColor": "#FAE8FF",
-    "tertiaryColor": "#FDF4FF",
-    "fontFamily": "IBM Plex Sans, ui-sans-serif, system-ui, sans-serif"
-  }
-}}%%
 flowchart LR
-  PG[(Skills / roles / edges)] --> META[graph_version]
-  META --> NX[NetworkX cache]
-  NX --> R[Deterministic recommender]
-  R --> P[Cycle-safe learning path]
-  NX --> UI[Cytoscape + adjacency UI]
-  R --> T[RecommendationTrace]
-  R --> EVAL[P@k / nDCG@k fixtures]
+  Data[(Skills, roles, profiles and relations)] --> Cache[Versioned NetworkX graph cache]
+  Data --> API[FastAPI]
+  Cache --> Fit[Deterministic role-fit scoring]
+  Cache --> Paths[Prerequisite expansion and cycle detection]
+  Fit --> API
+  Paths --> API
+  Cache --> API
+  API --> UI[React interface]
+  UI --> Graph[Cytoscape graph explorer]
+  UI --> Results[Role evidence and learning paths]
 ```
 
-| Layer | Choice | Why |
-| --- | --- | --- |
-| API | FastAPI + SQLAlchemy 2 + Alembic | Typed DTOs, migrations, `/health` + `/ready` |
-| Graph | NetworkX snapshot keyed by `graph_version` | Reload on ontology edits without Neo4j |
-| Scoring | Pure Python domain module | Unit-testable; embeddings never required |
-| UI | React + Vite + Cytoscape + Recharts | Graph explorer + gap / evidence views |
-| Data | SQLite local / Postgres in CI | Same models; compose verified in `compose-smoke` |
+SQLAlchemy persists the ontology and profiles in SQLite locally or PostgreSQL in CI. The in-memory NetworkX snapshot reloads when `graph_version` changes. FastAPI exposes graph, recommendation and path results to the React interface; recommendation traces retain the graph version. See the [algorithm documentation](docs/ALGORITHM.md).
 
-Deep dive: [docs/ALGORITHM.md](docs/ALGORITHM.md) · [docs/EVALUATION.md](docs/EVALUATION.md).
+## Scoring and paths
+
+Aliases are normalized and checked for collisions. An exact canonical match receives `1.0 × level factor`; a validated synonym receives `0.95 × level factor`. Related skills may earn partial credit but **never satisfy a mandatory requirement**. The mandatory gate is separate from the fit index. Path construction expands prerequisites and detects strongly connected components; affected skills are not assigned a fabricated order when a cycle is present. Full weights, relation types and edge cases are in [the algorithm reference](docs/ALGORITHM.md).
+
+## Evaluation
+
+The [evaluation](docs/EVALUATION.md) reports precision, recall and nDCG at 3 and 5 for ten hand-labeled synthetic profiles (`gold-fixtures-1.1.0`), measured on 2026-10-21 with embeddings disabled. Candidate roles are limited to each fixture's labeled set.
+
+| Method | P@3 | R@3 | nDCG@3 | nDCG@5 |
+| --- | ---: | ---: | ---: | ---: |
+| Overlap baseline | 0.8667 | 0.5175 | 0.8152 | 0.8908 |
+| Graph-augmented | 0.9000 | 0.6175 | 0.9383 | 0.9684 |
+
+P@5 and R@5 tied on this fixture set, and seven fixtures retained identical top-3 and top-5 grade sequences. These small, synthetic judgments do not establish hiring outcomes or generalization. The [evaluation report](docs/EVALUATION.md) includes the full table, tie analysis and methodology; [performance measurements](docs/PERFORMANCE_BASELINE.md) describe their local workload and limits.
 
 ## Quick start
 
-Native path on Windows 11 with `uv` + `pnpm`. Local Docker Compose is **BLOCKED** on the authoring host; the `compose-smoke` CI job remains defined for machines with Docker.
+Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js and pnpm. From the repository root, start the API:
 
 ```powershell
-# Backend — http://127.0.0.1:8105
 cd backend
 uv sync
 uv run python -m app
+```
 
-# Frontend — http://127.0.0.1:5105 (new terminal)
+In a second terminal, from the repository root:
+
+```powershell
 cd frontend
 pnpm install
 pnpm dev
 ```
 
-| Service | URL |
-| --- | --- |
-| Web | http://127.0.0.1:5105 |
-| API docs | http://127.0.0.1:8105/docs |
-| Health | http://127.0.0.1:8105/health |
-| Ready | http://127.0.0.1:8105/ready |
+Open [the app](http://127.0.0.1:5105) or [API documentation](http://127.0.0.1:8105/docs). The seeded demo includes the synthetic profile Avery Chen. Try **Graph Explorer → Role Explorer → Analytics Engineer → Compute role fit → Path Builder**. The default database is `backend/data/skillgraph.db`; configuration is documented in [`.env.example`](.env.example) and [`frontend/.env.example`](frontend/.env.example). Prefer one local API process with SQLite.
 
-Default DB: `backend/data/skillgraph.db`. Overrides: [`.env.example`](.env.example) / [`frontend/.env.example`](frontend/.env.example). Prefer one local API process against the default SQLite file.
+The native path was previously verified on Windows. Local Docker Compose was unavailable on the authoring host; the [CI workflow](.github/workflows/ci.yml) defines a Compose smoke job.
 
-## Demo
+## Tests
 
-1. Open http://127.0.0.1:5105 — demo banner + profile **Avery Chen**.
-2. **Graph Explorer** — pick a category, select a node, inspect adjacency by relation type.
-3. **Role Explorer** → **Analytics Engineer** → **Compute role fit** — gap matrix + evidence weights (`exact_match`, `validated_synonym`, `related_skill`, …). Label is an exploratory fit index, **not** a hiring probability.
-4. **Path Builder** → same role → **Build path** — ordered gap steps when cycle-free; cycles are reported, not invented away.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/role-explorer-dark.png">
-    <img alt="Role Explorer gap matrix and evidence weight breakdown for Analytics Engineer" src="docs/screenshots/role-explorer-light.png" width="100%">
-  </picture>
-</p>
-
-Playwright covers the same arc: `demo profile → graph → role fit → learning path` (`frontend/e2e/demo-flow.spec.ts`) plus an a11y smoke (`frontend/e2e/a11y-smoke.spec.ts`). CI runs `pnpm test:e2e` (WFO-style job).
-
-## Scoring and paths
-
-**Alias normalization.** Labels fold to a collision-checked token (`Postgres` → `postgres`). Identity via alias is `validated_synonym` (0.95× level factor), not exact (1.0).
-
-**Mandatory gates.** Related / semantic credit **never** satisfies a mandatory requirement. The gate is reported separately from the fit index.
-
-**Cycle-safe paths.** Prerequisite expansion + SCC detection. If a cycle touches the path, `cycle_free=false` and those skills get no invented order.
-
-**`graph_version`.** Incremented in the same transaction as ontology edits; NetworkX reloads when the version changes; every recommendation and trace records it.
-
-Full rules: [docs/ALGORITHM.md](docs/ALGORITHM.md).
-
-## Evaluation
-
-Measured via `GET /api/evaluation` on **ten** hand-labeled synthetic profiles (`method_version=skg-baseline-1.0.0`, `dataset_version=gold-fixtures-1.1.0`). Grades are fixture judgments on the demo ontology — **not** hiring outcomes.
-
-| Method | P@3 | P@5 | R@3 | R@5 | nDCG@3 | nDCG@5 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Overlap baseline | 0.8667 | 0.8400 | 0.5175 | 0.9092 | 0.8152 | 0.8908 |
-| Graph-augmented | 0.9000 | 0.8400 | 0.6175 | 0.9092 | 0.9383 | 0.9684 |
-
-**Honest read:** on this expanded set `macro_metrics_tie=false` — graph is higher on P@3 / R@3 / nDCG@3 / nDCG@5; P@5 and R@5 still match. The original five fixtures still show identical top-k grade sequences; divergence comes from cold-start / missing-mandatory / misleading-related scenarios. Related credit **never** satisfies mandatory gates. Do not market these numbers as hiring prediction. Full analysis: [docs/EVALUATION.md](docs/EVALUATION.md).
-
-## API
-
-```powershell
-curl http://127.0.0.1:8105/ready
-curl http://127.0.0.1:8105/api/profiles/demo
-curl -X POST http://127.0.0.1:8105/api/recommendations -H "Content-Type: application/json" -d "{\"profile_id\":1,\"role_id\":1}"
-curl -X POST http://127.0.0.1:8105/api/learning-paths -H "Content-Type: application/json" -d "{\"profile_id\":1,\"role_id\":1}"
-curl http://127.0.0.1:8105/api/evaluation
-```
-
-Key routes: `/api/skills`, `/api/graph`, `/api/roles`, `/api/profiles/*`, `/api/recommendations`, `/api/recommendations/compare`, `/api/learning-paths`, `/api/ontology/quality`, `/api/evaluation`, `/health`, `/ready`.
-
-## Testing
+Stop the quick-start API and frontend before running Playwright: its test configuration starts an isolated stack on the same ports and does not reuse existing servers. From the repository root:
 
 ```powershell
 cd backend
 uv run ruff check .
 uv run pytest -q
-
 cd ../frontend
 pnpm lint
 pnpm test
 pnpm build
-pnpm exec playwright install chromium   # once
+pnpm exec playwright install chromium  # once
 pnpm e2e
-pnpm screenshots   # writes docs/screenshots/*.png
 ```
 
-| Check | Result (2026-10-21) |
-| --- | --- |
-| `uv run pytest -q` | **47 passed**, 1 skipped (Postgres marker) |
-| `pnpm test` (Vitest) | **1 passed** |
-| Eval metrics | Live `GET /api/evaluation` (table above) |
-| Playwright | **2 passed** critical+a11y (`demo-flow`, `a11y-smoke`); screenshots via `pnpm screenshots` (real captures refreshed this session); CI `e2e` job added |
-| Local Docker Compose | **BLOCKED** (no Docker on this host) |
+CI defines link, backend, frontend, Playwright and Compose checks in [its workflow](.github/workflows/ci.yml). A previous local report dated 2026-10-21 recorded 47 backend tests passed and one PostgreSQL test skipped. These are historical results, not a claim about the current run. The Playwright journey covers the demo profile, graph, role fit and learning path.
 
-`compose.yaml` binds API `127.0.0.1:8105`, web `127.0.0.1:5105`, Postgres host `5405`. CI runs markdown-links, Ruff + pytest (Postgres service), frontend lint/tsc/vitest/build, Playwright `e2e`, and `compose-smoke`.
+## Security and limitations
 
-## Security, privacy, and limitations
-
-> [!IMPORTANT]
-> Synthetic profiles only. Fit scores are exploratory — never a probability of getting a job, a promotion decision, or a person score. No protected attributes are used.
-
-Policy: [`SECURITY.md`](SECURITY.md).
-
-- Loopback bind by default (`ALLOW_NETWORK_BIND=true` required otherwise).
-- No multi-user auth in this MVP.
-- External taxonomies are not claimed; seed data is synthetic/attributed in-code.
-- Embeddings optional; demo and evaluation run with `EMBEDDINGS_ENABLED=false`.
-- Macro metrics can tie even when per-role coverage changes — see [docs/EVALUATION.md](docs/EVALUATION.md).
+Use synthetic profiles only. This MVP has no multi-user authentication and binds to loopback by default; non-loopback binding requires `ALLOW_NETWORK_BIND=true`. It is not a public multi-tenant service and is not designed to make promotion or rejection decisions. The seed is synthetic; no external taxonomy is claimed. See [security](SECURITY.md) and the limitations in the [algorithm](docs/ALGORITHM.md) and [evaluation](docs/EVALUATION.md) references.
 
 ## Documentation
 
-| Doc | Contents |
-| --- | --- |
-| [`docs/ALGORITHM.md`](docs/ALGORITHM.md) | Normalization, edge types, credits, gates, paths |
-| [`docs/EVALUATION.md`](docs/EVALUATION.md) | Expanded fixtures, macro non-tie, grade-sequence ties |
-| [`docs/PERFORMANCE_BASELINE.md`](docs/PERFORMANCE_BASELINE.md) | Measured fit/path/eval latency (SQLite local) |
-| [`SECURITY.md`](SECURITY.md) | Loopback demo boundaries; not a production security claim |
-| [`frontend/README.md`](frontend/README.md) | Frontend setup, scripts, pages |
-| [`LICENSE`](LICENSE) | MIT © 2026 Hasan Hüseyin Yetkiner |
-
-<p align="right"><a href="#readme-top">↑ back to top</a></p>
+- [Scoring, ontology and path algorithms](docs/ALGORITHM.md)
+- [Evaluation and fixture methodology](docs/EVALUATION.md)
+- [Local performance baseline](docs/PERFORMANCE_BASELINE.md)
+- [Security](SECURITY.md), [frontend setup](frontend/README.md) and [MIT license](LICENSE)

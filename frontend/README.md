@@ -5,7 +5,7 @@ React 19 + Vite + TypeScript UI for the SkillGraph demo. Talks to the loopback F
 ## Prerequisites
 
 - Node 24+ with **pnpm** 12.x (see `packageManager` in `package.json`)
-- Backend running at `http://127.0.0.1:8105` (`cd ../backend && uv run python -m app`)
+- For interactive development, run the backend at `http://127.0.0.1:8105` (`cd ../backend && uv run python -m app`).
 
 ## Commands
 
@@ -16,8 +16,8 @@ pnpm lint
 pnpm typecheck
 pnpm test         # Vitest
 pnpm build
-pnpm e2e          # Playwright demo arc (API must be up)
-pnpm screenshots  # writes ../docs/screenshots/*.png (API must be up)
+pnpm e2e          # starts isolated API and web servers; ports 8105 and 5105 must be free
+pnpm screenshots  # writes ../docs/screenshots/*.png; starts or reuses the API and web servers
 ```
 
 Config: [`.env.example`](.env.example). Leave `VITE_API_BASE` empty to use the Vite `/api` proxy.
@@ -35,7 +35,7 @@ Config: [`.env.example`](.env.example). Leave `VITE_API_BASE` empty to use the V
 
 ## Screenshots
 
-Authentic captures live under [`docs/screenshots/`](../docs/screenshots/). Regenerate with `pnpm screenshots` while API + `pnpm dev` (or Playwright webServer) are available.
+Authentic captures live under [`docs/screenshots/`](../docs/screenshots/). Regenerate with `pnpm screenshots`; its Playwright configuration starts or reuses the API and frontend. When reusing servers it uses their existing data, not the configuration's separate screenshot database.
 
 ## Scope reminder
 
