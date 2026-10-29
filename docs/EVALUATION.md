@@ -49,7 +49,7 @@ On the original five fixtures alone (pre-expansion), macros **tied**. Divergence
 1. **Do not hide the non-tie.** Report API fields `macro_metrics_tie` and `tie_note` as returned.
 2. **Do not treat coverage deltas as ranking wins** when grade sequences still match (legacy five + alias_heavy + multi_role).
 3. **Related / semantic credit never satisfies mandatory gates** — verified in unit and fault-injection tests. Ranking movement ≠ mandatory satisfaction.
-4. **Fixtures were not tuned post-hoc** to invent a graph win: scenario labels follow the same grade rules as the original set.
+4. **Independence is not established.** The fixtures and ontology are project-created; the grade rules alone do not establish blinded or independent labeling.
 5. Related-edge ranking gains remain **fragile** on a tiny labeled catalog; treat nDCG lifts as exploratory.
 
 ## Ranking-order check (grade sequences)
