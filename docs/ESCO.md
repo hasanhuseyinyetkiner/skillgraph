@@ -1,0 +1,13 @@
+# ESCO source investigation
+
+ESCO is the European Commission's classification of occupations and skills, including occupation–skill relations. The [download page](https://esco.ec.europa.eu/en/use-esco/download) lists v1.2.1 as the current classification (last updated 10 December 2025). The [web API page](https://esco.ec.europa.eu/en/use-esco/use-esco-services-api/esco-web-service-api) lists v1.2.0 as a selectable API version; it also describes an older default, so a reproducible request should explicitly select its version. Classification version and API software version are distinct.
+
+The Commission's [reuse FAQ](https://esco.ec.europa.eu/en/about-esco/faq?page=1) says the classification may be used free of charge under the Commission's reuse decision, requires acknowledgement and requires modified or adapted versions to be identified. For an integrating service the prescribed acknowledgement is: “This service uses the ESCO classification of the European Commission.” Do not assume the project's MIT code license applies to ESCO data. The [API software page](https://esco.ec.europa.eu/en/use-esco/use-esco-services-api) separately identifies the API software license as EUPL 1.2.
+
+## Access attempt and next step
+
+On 29 October 2026, requests to the Commission's web API for v1.2.0 returned HTTP 500 for both an occupation search and the occupation URI used in the official API documentation. The [download process](https://esco.ec.europa.eu/en/use-esco/download) requires accepting its privacy statement and providing an email address for a download link. No ESCO data was imported or redistributed in this repository, and the application seed remains synthetic.
+
+A future source check could use the English `occupations`, `skills`, and `occupationSkillRelations` files from a single pinned release, retaining file checksums, acquisition date, original URIs, relation type and attribution. The Commission [describes the dataset structure](https://esco.ec.europa.eu/en/use-esco/download) and how relation files connect concepts by URI. Any selection or transformation should be identified as an adaptation; avoid converting ESCO's essential or optional relations into the app's mandatory requirements without an explicit, justified mapping.
+
+ESCO relations can support a check of whether an import preserves published concepts and edges. They do not supply independent labels for whether a recommended role is appropriate for a person. Evaluating recommendations requires separately collected, independently judged profile–role relevance data, a documented candidate set and a held-out evaluation; no such data is available here.
